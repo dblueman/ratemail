@@ -70,5 +70,11 @@ func (mailer *Mailer) SendRate(to, subject, bodyType, body string) error {
       return nil
    }
 
-   return mailer.Send(to, subject, bodyType, body)
+   ret := mailer.Send(to, subject, bodyType, body)
+
+   if ret == nil {
+      cache[key] = time.Now()
+   }
+
+   return ret
 }
