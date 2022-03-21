@@ -12,7 +12,7 @@ const (
 )
 
 var (
-   cache map[string]time.Time
+   cache = map[string]time.Time{}
    re    = regexp.MustCompile(`\d{2}:\d{2}:\d{2}`)
 )
 
