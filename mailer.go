@@ -23,19 +23,24 @@ type Mailer struct {
    from string
 }
 
+func check() {
+   lock.Lock()
+   defer lock.Unlock()
+
+   for key, t0 := range(cache) {
+      if time.Since(t0) < expiry {
+         continue
+      }
+
+      delete(cache, key)
+   }
+}
+
 func init() {
    go func() {
-      time.Sleep(expiry)
-
-      lock.Lock()
-      defer lock.Unlock()
-
-      for key, t0 := range(cache) {
-         if time.Since(t0) < expiry {
-            continue
-         }
-
-         delete(cache, key)
+      for {
+         time.Sleep(expiry)
+         check()
       }
    }()
 }
