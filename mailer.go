@@ -2,6 +2,7 @@ package ratemail
 
 import (
    "regexp"
+   "sync"
    "time"
 
    "github.com/Shopify/gomail"
@@ -13,6 +14,7 @@ const (
 
 var (
    cache = map[string]time.Time{}
+   lock  = sync.Mutex{}
    re    = regexp.MustCompile(`\d{2}:\d{2}:\d{2}`)
 )
 
@@ -24,6 +26,9 @@ type Mailer struct {
 func init() {
    go func() {
       time.Sleep(expiry)
+
+      lock.Lock()
+      defer lock.Unlock()
 
       for key, t0 := range(cache) {
          if time.Since(t0) < expiry {
@@ -65,6 +70,10 @@ func (mailer *Mailer) Send(to, subject, bodyType, body string) error {
 
 func (mailer *Mailer) SendRate(to, subject, bodyType, body string) error {
    key := re.ReplaceAllString(to+subject+body, "")
+
+   lock.Lock()
+   defer lock.Unlock()
+
    _, ok := cache[key]
    if ok {
       return nil
